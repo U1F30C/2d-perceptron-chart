@@ -8,7 +8,7 @@ function dot(v1, v2) {
 
 function Perceptron(weights, bias) {
   return function (values) {
-    return dot(weights, values) - bias; // >= 0 ? 1 : 0;
+    return dot(weights, values) - bias > 0 ? 1 : 0;
   };
 }
 
@@ -16,7 +16,7 @@ function converges(sets, perceptron) {
   for (const set of sets) {
     let desired = set.slice(-1)[0];
 
-    if ((perceptron(set.slice(0, -1)) > 0 ? 1 : 0) != desired) {
+    if (perceptron(set.slice(0, -1)) != desired) {
       return false;
     }
   }

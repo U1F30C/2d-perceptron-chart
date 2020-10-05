@@ -64,8 +64,8 @@ class ParametersForm extends Component {
       training.forEach((rule) => {
         let target = rule.slice(-1)[0];
         let actual = perceptron(rule.slice(0, -1));
-        if ((actual > 0 ? 1 : 0) != target) {
-          let error = target - (actual > 0 ? 1 : 0);
+        if (actual != target) {
+          let error = target - actual;
           let diff = step * error;
           bias -= diff;
           for (let i = 0; i < w.length; i++) {
