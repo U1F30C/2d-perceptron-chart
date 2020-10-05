@@ -6,24 +6,38 @@ function dot(v1, v2) {
   return result;
 }
 
-function Perceptron(weights, bias) {
-  return function (values) {
-    return dot(weights, values) - bias > 0 ? 1 : 0;
+function Perceptron(weights, bias, step = 0.01) {
+  let perceptron = { weights, bias };
+  perceptron.predict = function (inputs) {
+    if (inputs.length !== perceptron.weights.length) return null;
+    return dot(perceptron.weights, inputs) - perceptron.bias > 0 ? 1 : 0;
   };
-}
+  perceptron.converges = function (rules) {
+    for (const rule of rules) {
+      let desired = rule.slice(-1)[0];
 
-function converges(sets, perceptron) {
-  for (const set of sets) {
-    let desired = set.slice(-1)[0];
-
-    if (perceptron(set.slice(0, -1)) != desired) {
-      return false;
+      if (perceptron.predict(rule.slice(0, -1)) != desired) {
+        return false;
+      }
     }
-  }
-  return true;
+    return true;
+  };
+  perceptron.train = function (rule) {
+    let target = rule.slice(-1)[0];
+    let actual = perceptron.predict(rule.slice(0, -1));
+    if (actual != target) {
+      let error = target - actual;
+      let diff = step * error;
+      perceptron.bias -= diff;
+      for (let i = 0; i < perceptron.weights.length; i++) {
+        perceptron.weights[i] = perceptron.weights[i] + diff * rule[i];
+      }
+    }
+  };
+  return perceptron;
 }
 
-export { converges, Perceptron, dot };
+export { Perceptron };
 
 // let orPerceptron = Perceptron([1, 1], 1);
 

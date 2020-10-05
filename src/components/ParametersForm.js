@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Perceptron, converges } from "./../utils/Perceptron";
+import { Perceptron } from "./../utils/Perceptron";
 
 class ParametersForm extends Component {
   state = { weights: "1,1", bias: "1", rules: "0,0,0\n0,1,1\n1,0,1\n1,1,1" };
@@ -50,36 +50,23 @@ class ParametersForm extends Component {
     result.positive = this.separateSet(rules, "1");
     result.negative = this.separateSet(rules, "0");
 
-    let step = 0.01;
-    let bias = Math.random();
-    let w = [Math.random(), Math.random()];
-    let training = rules
+    let trainingRules = rules
       .split("\n")
       .map((rule) => rule.split(",").map((e) => +e));
-    let perceptron = Perceptron(w, +bias);
-    while (!converges(training, perceptron)) {
-      perceptron = Perceptron(w, +bias);
-
-      training.forEach((rule) => {
-        let target = rule.slice(-1)[0];
-        let actual = perceptron(rule.slice(0, -1));
-        if (actual != target) {
-          let error = target - actual;
-          let diff = step * error;
-          bias -= diff;
-          for (let i = 0; i < w.length; i++) {
-            w[i] = w[i] + diff * rule[i];
-          }
-        }
+    let perceptron = Perceptron([Math.random(), Math.random()], Math.random());
+    while (!perceptron.converges(trainingRules)) {
+      trainingRules.forEach((rule) => {
+        perceptron.train(rule);
       });
       await this.sleep(0.1);
-      result.line = this.generateLine(w[0], w[1], bias);
+      let [w1, w2] = perceptron.weights;
+      result.line = this.generateLine(w1, w2, perceptron.bias);
       this.props.onSubmit(result);
-      this.setState({ weights: w.join(","), bias: bias.toString() });
+      this.setState({
+        weights: perceptron.weights.join(","),
+        bias: perceptron.bias.toString(),
+      });
     }
-
-    result.line = this.generateLine(w[0], w[1], bias);
-    this.props.onSubmit(result);
   }
 
   sleep(seconds) {
