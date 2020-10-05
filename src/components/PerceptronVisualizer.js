@@ -11,7 +11,6 @@ class PerceptronVisualizer extends Component {
   }
 
   updateState(state) {
-    console.log(state);
     this.setState(state);
   }
   render() {
