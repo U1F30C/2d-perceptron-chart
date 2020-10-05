@@ -38,10 +38,3 @@ function Perceptron(weights, bias, step = 0.01) {
 }
 
 export { Perceptron };
-
-// let orPerceptron = Perceptron([1, 1], 1);
-
-// console.log(orPerceptron([0, 0])); // 0
-// console.log(orPerceptron([0, 1])); // 1
-// console.log(orPerceptron([1, 0])); // 1
-// console.log(orPerceptron([1, 1])); // 1
