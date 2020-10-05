@@ -8,10 +8,16 @@ function dot(v1, v2) {
 
 function Perceptron(weights, bias, step = 0.01) {
   let perceptron = { weights, bias };
+
+  function _predict(inputs) {
+    return dot(perceptron.weights, inputs) - perceptron.bias;
+  }
+
   perceptron.predict = function (inputs) {
     if (inputs.length !== perceptron.weights.length) return null;
-    return dot(perceptron.weights, inputs) - perceptron.bias > 0 ? 1 : 0;
+    return _predict(inputs) > 0 ? 1 : 0;
   };
+
   perceptron.converges = function (rules) {
     for (const rule of rules) {
       let desired = rule.slice(-1)[0];
@@ -22,6 +28,17 @@ function Perceptron(weights, bias, step = 0.01) {
     }
     return true;
   };
+
+  perceptron.error = function (rules) {
+    let accum = 0;
+    rules.forEach((rule) => {
+      let target = rule.slice(-1)[0];
+      let actual = _predict(rule.slice(0, -1));
+      accum += Math.pow(target - actual, 2);
+    });
+    return accum / rules.length;
+  };
+
   perceptron.train = function (rule) {
     let target = rule.slice(-1)[0];
     let actual = perceptron.predict(rule.slice(0, -1));
