@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Perceptron, converges } from "./../utils/Perceptron";
 
 class ParametersForm extends Component {
-  state = { weights: "1,1", bias: "1", rules: "0,0,0;0,1,1;1,0,1;1,1,1" };
+  state = { weights: "1,1", bias: "1", rules: "0,0,0\n0,1,1\n1,0,1\n1,1,1" };
   handleChange = this.handleChange.bind(this);
   calculateWeights = this.calculateWeights.bind(this);
 
@@ -33,7 +33,7 @@ class ParametersForm extends Component {
 
   separateSet(rules, label) {
     return rules
-      .split(";")
+      .split("\n")
       .map((rule) => rule.split(","))
       .filter((rule) => rule.slice(-1) == label)
       .map((rule) => {
@@ -52,10 +52,9 @@ class ParametersForm extends Component {
 
     let step = 0.01;
     let bias = Math.random();
-    // let w = weights.split(",").map((v) => +v);
     let w = [Math.random(), Math.random()];
     let training = rules
-      .split(";")
+      .split("\n")
       .map((rule) => rule.split(",").map((e) => +e));
     let perceptron = Perceptron(w, +bias);
     while (!converges(training, perceptron)) {
@@ -76,6 +75,7 @@ class ParametersForm extends Component {
       await this.sleep(0.1);
       result.line = this.generateLine(w[0], w[1], bias);
       this.props.onSubmit(result);
+      this.setState({ weights: w.join(","), bias: bias.toString() });
     }
 
     result.line = this.generateLine(w[0], w[1], bias);
@@ -112,8 +112,7 @@ class ParametersForm extends Component {
         <br />
         <label>
           Reglas:
-          <input
-            type="text"
+          <textarea
             name="rules"
             value={this.state.rules}
             onChange={this.handleChange}
