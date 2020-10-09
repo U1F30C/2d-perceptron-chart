@@ -3,38 +3,12 @@ import { Perceptron } from "./../utils/Perceptron";
 import { minBy, maxBy } from "lodash";
 
 class ParametersForm extends Component {
-  state = { weights: "1,1", bias: "1", rules: "0,0,0\n0,1,1\n1,0,1\n1,1,1" };
+  state = { rules: "0,0,0\n0,1,1\n1,0,1\n1,1,1" };
   handleChange = this.handleChange.bind(this);
   calculateWeights = this.calculateWeights.bind(this);
 
   handleChange(event) {
-    this.setState({ [event.target.name]: event.target.value }, () => {
-      let result = {};
-      let { rules, bias, weights } = this.state;
-      bias = +bias;
-      let [w1, w2] = weights.split(",").map((v) => +v);
-      result.positive = this.separateSet(rules, "1");
-      result.negative = this.separateSet(rules, "0");
-
-      result.line = this.generateLine(
-        w1,
-        w2,
-        bias,
-        rules.split("\n").map((rule) => rule.split(",").map((e) => +e))
-      );
-
-      this.props.onSubmit(result);
-    });
-  }
-
-  generateLine(w1, w2, bias, rules) {
-    // y = b/w2 - w1x1/w2
-    let leftLimit = minBy(rules, "0")[0] - 1,
-      rightLimit = maxBy(rules, "0")[0] + 1;
-
-    let p1 = { x: leftLimit, y: bias / w2 - (w1 * leftLimit) / w2 };
-    let p2 = { x: rightLimit, y: bias / w2 - (w1 * rightLimit) / w2 };
-    return [p1, p2];
+    this.setState({ [event.target.name]: event.target.value });
   }
 
   separateSet(rules, label) {
@@ -50,12 +24,7 @@ class ParametersForm extends Component {
 
   async calculateWeights(e) {
     e.preventDefault();
-
-    let result = {};
     let { rules } = this.state;
-    result.positive = this.separateSet(rules, "1");
-    result.negative = this.separateSet(rules, "0");
-
     let trainingRules = rules
       .split("\n")
       .map((rule) => rule.split(",").map((e) => +e));
@@ -65,13 +34,7 @@ class ParametersForm extends Component {
         perceptron.train(rule);
       });
       await this.sleep(0.1);
-      let [w1, w2] = perceptron.weights;
-      result.line = this.generateLine(w1, w2, perceptron.bias, trainingRules);
-      this.props.onSubmit(result);
-      this.setState({
-        weights: perceptron.weights.join(","),
-        bias: perceptron.bias.toString(),
-      });
+      this.props.onSubmit(perceptron.error(trainingRules));
     }
   }
 
@@ -83,26 +46,6 @@ class ParametersForm extends Component {
   render() {
     return (
       <form>
-        <label>
-          Pesos:
-          <input
-            type="text"
-            name="weights"
-            value={this.state.weights}
-            onChange={this.handleChange}
-          />
-        </label>
-        <br />
-        <label>
-          Umbral:
-          <input
-            type="text"
-            name="bias"
-            value={this.state.bias}
-            onChange={this.handleChange}
-          />
-        </label>
-        <br />
         <label>
           Reglas:
           <textarea

@@ -1,72 +1,64 @@
 import React, { Component } from "react";
 import ParametersForm from "./ParametersForm";
 
-import { Scatter } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 
 class PerceptronVisualizer extends Component {
-  state = { line: [], positive: [], negative: [] };
+  state = { line: [] };
   constructor(props) {
     super(props);
     this.updateState = this.updateState.bind(this);
   }
 
-  updateState(state) {
-    this.setState(state);
+  updateState(error) {
+    const { line } = this.state;
+    this.setState({ line: [...line, { x: line.length, y: error }] });
   }
+
   render() {
     return (
       <div>
         <ParametersForm onSubmit={this.updateState} />
-        <Scatter
+        <Line
           data={{
+            labels: [...Array(this.state.line.length)].map((_, i) => i + ""),
             datasets: [
               {
-                label: "Hyperplano",
+                label: "Error",
                 data: this.state.line,
-                type: "line",
+                // type: "line",
                 backgroundColor: "rgba(255,255,255, 0)",
                 borderColor: "rgba(0,100,255, 1)",
                 hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
                 hoverBorderColor: "rgba(230, 236, 235, 0.75)",
               },
-              {
-                label: "Positivos",
-                data: this.state.positive,
-                type: "scatter",
-                backgroundColor: "rgba(0,255,0, 1)",
-                borderColor: "rgba(0,255,0, 1)",
-                hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
-                hoverBorderColor: "rgba(230, 236, 235, 0.75)",
-              },
-              {
-                label: "Negativos",
-                data: this.state.negative,
-                type: "scatter",
-                backgroundColor: "rgba(255,0,0, 1)",
-                borderColor: "rgba(255,0,0, 1)",
-                hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
-                hoverBorderColor: "rgba(230, 236, 235, 0.75)",
-              },
             ],
-            options: {
-              scales: {
-                yAxes: [{}],
-                xAxes: [
-                  {
-                    type: "linear",
-                    position: "bottom",
-                  },
-                ],
-              },
-              responsive: true,
-            },
+            options,
           }}
-          width={200}
-          height={200}
+          width={300}
+          height={300}
         />
       </div>
     );
   }
 }
+
+let options = {
+  scales: {
+    yAxes: [{}],
+    xAxes: [
+      {
+        type: "linear",
+        // position: "bottom",
+        display: true, // mandatory
+        scaleLabel: {
+          display: true, // mandatory
+          labelString: "Your label", // optional
+        },
+      },
+    ],
+  },
+  responsive: true,
+};
 
 export default PerceptronVisualizer;
