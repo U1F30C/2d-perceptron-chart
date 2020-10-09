@@ -14,11 +14,14 @@ class ParametersForm extends Component {
   async _calculateWeights(trainingRules) {
     let perceptron = Perceptron([Math.random(), Math.random()], Math.random());
     while (!perceptron.converges(trainingRules)) {
+      const actual = [];
       trainingRules.forEach((rule) => {
         perceptron.train(rule);
+        actual.push(perceptron.predict(rule.slice(0, -1)));
       });
       await this.sleep(0.1);
       this.props.onSubmit(perceptron.error(trainingRules));
+      this.setState({ actualOutputs: actual.join("\n") });
     }
   }
 
@@ -51,11 +54,20 @@ class ParametersForm extends Component {
           />
         </label>
         <label>
-          Salidas:
+          Salidas esperadas:
           <textarea
             name="outputs"
             value={this.state.outputs}
             onChange={this.handleChange}
+            style={{ width: 50, height: 300 }}
+          />
+        </label>
+        <label>
+          Salidas reales:
+          <textarea
+            name="actualOutputs"
+            value={this.state.actualOutputs}
+            // onChange={this.handleChange}
             style={{ width: 50, height: 300 }}
           />
         </label>
