@@ -12,7 +12,10 @@ class ParametersForm extends Component {
   }
 
   async _calculateWeights(trainingRules) {
-    let perceptron = Perceptron([Math.random(), Math.random()], Math.random());
+    let perceptron = Perceptron(
+      Array.from(Array(trainingRules[0]?.length - 1)).map((_) => Math.random()),
+      Math.random()
+    );
     while (!perceptron.converges(trainingRules)) {
       const actual = [];
       trainingRules.forEach((rule) => {
@@ -50,7 +53,7 @@ class ParametersForm extends Component {
             name="inputs"
             value={this.state.inputs}
             onChange={this.handleChange}
-            style={{ width: 300, height: 300 }}
+            style={{ width: 100, height: 150 }}
           />
         </label>
         <label>
@@ -59,7 +62,7 @@ class ParametersForm extends Component {
             name="outputs"
             value={this.state.outputs}
             onChange={this.handleChange}
-            style={{ width: 50, height: 300 }}
+            style={{ width: 50, height: 150 }}
           />
         </label>
         <label>
@@ -68,7 +71,7 @@ class ParametersForm extends Component {
             name="actualOutputs"
             value={this.state.actualOutputs}
             // onChange={this.handleChange}
-            style={{ width: 50, height: 300 }}
+            style={{ width: 50, height: 150 }}
           />
         </label>
         <br />
