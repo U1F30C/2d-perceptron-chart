@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Perceptron } from "./../utils/Perceptron";
+import { minBy, maxBy } from "lodash";
 
 class ParametersForm extends Component {
   state = { weights: "1,1", bias: "1", rules: "0,0,0\n0,1,1\n1,0,1\n1,1,1" };
@@ -15,16 +16,21 @@ class ParametersForm extends Component {
       result.positive = this.separateSet(rules, "1");
       result.negative = this.separateSet(rules, "0");
 
-      result.line = this.generateLine(w1, w2, bias);
+      result.line = this.generateLine(
+        w1,
+        w2,
+        bias,
+        rules.split("\n").map((rule) => rule.split(",").map((e) => +e))
+      );
 
       this.props.onSubmit(result);
     });
   }
 
-  generateLine(w1, w2, bias) {
+  generateLine(w1, w2, bias, rules) {
     // y = b/w2 - w1x1/w2
-    let leftLimit = -1,
-      rightLimit = 2;
+    let leftLimit = minBy(rules, "0")[0] - 1,
+      rightLimit = maxBy(rules, "0")[0] + 1;
 
     let p1 = { x: leftLimit, y: bias / w2 - (w1 * leftLimit) / w2 };
     let p2 = { x: rightLimit, y: bias / w2 - (w1 * rightLimit) / w2 };
@@ -60,7 +66,7 @@ class ParametersForm extends Component {
       });
       await this.sleep(0.1);
       let [w1, w2] = perceptron.weights;
-      result.line = this.generateLine(w1, w2, perceptron.bias);
+      result.line = this.generateLine(w1, w2, perceptron.bias, trainingRules);
       this.props.onSubmit(result);
       this.setState({
         weights: perceptron.weights.join(","),
