@@ -3,7 +3,7 @@ import { Perceptron } from "./../utils/Perceptron";
 import { minBy, maxBy } from "lodash";
 
 class ParametersForm extends Component {
-  state = { rules: "0,0,0\n0,1,1\n1,0,1\n1,1,1" };
+  state = { inputs: "0,0\n0,1\n1,0\n1,1", outputs: "0\n1\n1\n1" };
   handleChange = this.handleChange.bind(this);
   calculateWeights = this.calculateWeights.bind(this);
 
@@ -11,23 +11,7 @@ class ParametersForm extends Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  separateSet(rules, label) {
-    return rules
-      .split("\n")
-      .map((rule) => rule.split(","))
-      .filter((rule) => rule.slice(-1) == label)
-      .map((rule) => {
-        let [x, y] = rule.map((v) => +v);
-        return { x, y };
-      });
-  }
-
-  async calculateWeights(e) {
-    e.preventDefault();
-    let { rules } = this.state;
-    let trainingRules = rules
-      .split("\n")
-      .map((rule) => rule.split(",").map((e) => +e));
+  async _calculateWeights(trainingRules) {
     let perceptron = Perceptron([Math.random(), Math.random()], Math.random());
     while (!perceptron.converges(trainingRules)) {
       trainingRules.forEach((rule) => {
@@ -38,20 +22,41 @@ class ParametersForm extends Component {
     }
   }
 
+  async calculateWeights(e) {
+    e.preventDefault();
+    let { inputs, outputs } = this.state;
+    inputs = inputs.split("\n").map((rule) => rule.split(",").map((e) => +e));
+    outputs = outputs.split("\n").map((output) => +output);
+
+    const rules = inputs.map((a, i) => [...a, outputs[i]]);
+    this._calculateWeights(rules);
+  }
+
   sleep(seconds) {
     return new Promise((resolve, _reject) => {
       setTimeout(resolve, 1000 * seconds);
     });
   }
+
   render() {
     return (
       <form>
         <label>
-          Reglas:
+          Entradas:
           <textarea
-            name="rules"
-            value={this.state.rules}
+            name="inputs"
+            value={this.state.inputs}
             onChange={this.handleChange}
+            style={{ width: 300, height: 300 }}
+          />
+        </label>
+        <label>
+          Salidas:
+          <textarea
+            name="outputs"
+            value={this.state.outputs}
+            onChange={this.handleChange}
+            style={{ width: 50, height: 300 }}
           />
         </label>
         <br />
