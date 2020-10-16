@@ -13,19 +13,21 @@ class ParametersForm extends Component {
 
   async _calculateWeights(trainingRules) {
     let perceptron = Perceptron(
-      Array.from(Array(trainingRules[0]?.length - 1)).map((_) => Math.random()),
+      Array.from(Array(trainingRules[0]?.inputs.length)).map((_) =>
+        Math.random()
+      ),
       Math.random()
     );
+    trainingRules.forEach((rule) => {
+      perceptron.addRule(rule);
+    });
     while (!perceptron.converges(trainingRules)) {
-      const actual = [];
-      trainingRules.forEach((rule) => {
-        perceptron.train(rule);
-        actual.push(perceptron.predict(rule.slice(0, -1)));
-      });
-      await this.sleep(0.1);
+      perceptron.train();
       this.props.onSubmit(perceptron.error(trainingRules));
-      this.setState({ actualOutputs: actual.join("\n") });
+      await this.sleep(0.1);
     }
+    const actual = trainingRules.map((rule) => perceptron.predict(rule.inputs));
+    this.setState({ actualOutputs: actual.join("\n") });
   }
 
   async calculateWeights(e) {
@@ -34,7 +36,7 @@ class ParametersForm extends Component {
     inputs = inputs.split("\n").map((rule) => rule.split(",").map((e) => +e));
     outputs = outputs.split("\n").map((output) => +output);
 
-    const rules = inputs.map((a, i) => [...a, outputs[i]]);
+    const rules = inputs.map((a, i) => ({ inputs: a, target: outputs[i] }));
     this._calculateWeights(rules);
   }
 
