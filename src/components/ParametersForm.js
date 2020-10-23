@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Perceptron } from "./../utils/Perceptron";
-import { minBy, maxBy } from "lodash";
+import { unzip } from "lodash";
 
 class ParametersForm extends Component {
-  state = { inputs: "0,0\n0,1\n1,0\n1,1", outputs: "0\n1\n1\n1" };
+  state = { inputs: "0,0\n0,1\n1,0\n1,1", outputs: "0,0,0,1\n1,0,0,1\n1,0,1,0\n1,1,1,0" };
   handleChange = this.handleChange.bind(this);
   calculateWeights = this.calculateWeights.bind(this);
 
@@ -11,33 +11,67 @@ class ParametersForm extends Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  async _calculateWeights(trainingRules) {
-    let perceptron = Perceptron(
-      Array.from(Array(trainingRules[0]?.inputs.length)).map((_) =>
-        Math.random()
-      ),
-      Math.random()
-    );
-    trainingRules.forEach((rule) => {
-      perceptron.addRule(rule);
-    });
-    while (!perceptron.converges(trainingRules)) {
-      perceptron.train();
-      this.props.onSubmit(perceptron.error(trainingRules));
+  async _calculateWeights(perceptrons) {
+    let layerError;
+    let actualOutputs;
+    while (!perceptrons.every((perceptron) => perceptron.converges())) {
+      layerError = 0;
+      actualOutputs = [];
+      perceptrons.forEach((perceptron) => {
+        perceptron.train();
+        layerError += perceptron.error();
+        actualOutputs.push(perceptron.currentPredictions());
+      });
+      actualOutputs = unzip(actualOutputs);
+      actualOutputs = actualOutputs
+        .map((actualOutput) => actualOutput.join(","))
+        .join("\n");
+      this.props.onSubmit(layerError);
+      this.setState({ actualOutputs });
       await this.sleep(0.1);
     }
-    const actual = trainingRules.map((rule) => perceptron.predict(rule.inputs));
-    this.setState({ actualOutputs: actual.join("\n") });
+
+
+
+    layerError = 0;
+    actualOutputs = [];
+    perceptrons.forEach((perceptron) => {
+      layerError += Math.pow(perceptron.error(), 2);
+      actualOutputs.push(perceptron.currentPredictions());
+    });
+    actualOutputs = unzip(actualOutputs);
+    actualOutputs = actualOutputs
+      .map((actualOutput) => actualOutput.join(","))
+      .join("\n");
+    this.props.onSubmit(layerError);
+    this.setState({ actualOutputs });
   }
 
   async calculateWeights(e) {
     e.preventDefault();
-    let { inputs, outputs } = this.state;
-    inputs = inputs.split("\n").map((rule) => rule.split(",").map((e) => +e));
-    outputs = outputs.split("\n").map((output) => +output);
+    let { inputs: _inputs, outputs: _outputs } = this.state;
+    _inputs = _inputs.split("\n").map((rule) => rule.split(",").map((e) => +e));
+    _outputs = _outputs
+      .split("\n")
+      .map((output) => output.split(",").map((output) => +output));
+    _outputs = unzip(_outputs);
 
-    const rules = inputs.map((a, i) => ({ inputs: a, target: outputs[i] }));
-    this._calculateWeights(rules);
+    const perceptrons = _outputs.map((outputColumn) => {
+      let perceptron = this.getPerceptron(_inputs[0]?.length);
+      _inputs.forEach((inputRow, i) =>
+        perceptron.addRule({ inputs: inputRow, target: outputColumn[i] })
+      );
+      return perceptron;
+    });
+
+    this._calculateWeights(perceptrons);
+  }
+
+  getPerceptron(length) {
+    return Perceptron(
+      Array.from(Array(length)).map((_) => Math.random()),
+      Math.random()
+    );
   }
 
   sleep(seconds) {
@@ -64,7 +98,7 @@ class ParametersForm extends Component {
             name="outputs"
             value={this.state.outputs}
             onChange={this.handleChange}
-            style={{ width: 50, height: 150 }}
+            style={{ width: 70, height: 150 }}
           />
         </label>
         <label>
@@ -72,8 +106,7 @@ class ParametersForm extends Component {
           <textarea
             name="actualOutputs"
             value={this.state.actualOutputs}
-            // onChange={this.handleChange}
-            style={{ width: 50, height: 150 }}
+            style={{ width: 70, height: 150 }}
           />
         </label>
         <br />
