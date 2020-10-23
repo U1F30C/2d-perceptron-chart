@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import ParametersForm from "./ParametersForm";
+import { range } from "lodash";
 
 import { Line } from "react-chartjs-2";
 
@@ -44,7 +45,7 @@ class PerceptronVisualizer extends Component {
 
         <Line
           data={{
-            // labels: [...Array(this.state.line.length)],
+            labels: range(-3, 5),
             datasets: this.state.lines,
             options,
           }}
