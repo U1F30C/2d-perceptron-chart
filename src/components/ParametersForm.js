@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Perceptron } from "./../utils/Perceptron";
-import { unzip, groupBy, map } from "lodash";
+import { unzip, groupBy, mapValues, entries } from "lodash";
 
 class ParametersForm extends Component {
   state = {
@@ -39,7 +39,18 @@ class ParametersForm extends Component {
         hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
         hoverBorderColor: "rgba(230, 236, 235, 0.75)",
       }));
-      this.props.onSubmit({ error: layerError, lines });
+      const categories = entries(
+        groupBy(inputs, (input) => this.categorize(input, perceptrons))
+      ).map(([category, categorized]) => ({
+        label: "Categoria " + category,
+        data: categorized.map(([x, y]) => ({ x, y })),
+        type: "scatter",
+        backgroundColor: "rgba(255,255,255, 0)",
+        borderColor: "rgba(0,100,255, 1)",
+        hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
+        hoverBorderColor: "rgba(230, 236, 235, 0.75)",
+      }));
+      this.props.onSubmit({ error: layerError, lines, categories });
       this.setState({ actualOutputs });
       await this.sleep(0.1);
     }
@@ -64,8 +75,26 @@ class ParametersForm extends Component {
       hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
       hoverBorderColor: "rgba(230, 236, 235, 0.75)",
     }));
-    this.props.onSubmit({ error: layerError, lines });
+    const categories = entries(
+      groupBy(inputs, (input) => this.categorize(input, perceptrons))
+    ).map(([category, categorized]) => ({
+      label: "Categoria " + category,
+      data: categorized.map(([x, y]) => ({ x, y })),
+      type: "scatter",
+      backgroundColor: "rgba(255,255,255, 0)",
+      borderColor: "rgba(0,100,255, 1)",
+      hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
+      hoverBorderColor: "rgba(230, 236, 235, 0.75)",
+    }));
+    this.props.onSubmit({ error: layerError, lines, categories });
     this.setState({ actualOutputs });
+  }
+
+  categorize(input, perceptrons) {
+    return perceptrons.reduce(
+      (acc, perceptron) => acc + perceptron.predict(input),
+      ""
+    );
   }
 
   generateLine(perceptron) {

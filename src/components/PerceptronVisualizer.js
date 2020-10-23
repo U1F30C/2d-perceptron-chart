@@ -10,11 +10,11 @@ class PerceptronVisualizer extends Component {
     this.updateState = this.updateState.bind(this);
   }
 
-  updateState({ error: currentError, lines }) {
+  updateState({ error: currentError, lines, categories }) {
     const { error } = this.state;
     this.setState({
       error: [...error, { x: error.length, y: currentError }],
-      lines,
+      lines: [...lines, ...categories],
     });
   }
 
