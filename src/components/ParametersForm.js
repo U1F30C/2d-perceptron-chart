@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Perceptron } from "./../utils/Perceptron";
-import { unzip } from "lodash";
+import { unzip, groupBy, map } from "lodash";
 
 class ParametersForm extends Component {
   state = {
@@ -14,7 +14,7 @@ class ParametersForm extends Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  async _calculateWeights(perceptrons) {
+  async _calculateWeights(perceptrons, inputs) {
     let layerError;
     let actualOutputs;
     while (!perceptrons.every((perceptron) => perceptron.converges())) {
@@ -30,16 +30,16 @@ class ParametersForm extends Component {
         .map((actualOutput) => actualOutput.join(","))
         .join("\n");
 
-        let lines = perceptrons.map(this.generateLine).map((line, i) => ({
-          label: "Hyperplano " + i,
-          data: line,
-          type: "line",
-          backgroundColor: "rgba(255,255,255, 0)",
-          borderColor: "rgba(0,100,255, 1)",
-          hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
-          hoverBorderColor: "rgba(230, 236, 235, 0.75)",
-        }));
-        this.props.onSubmit({ error: layerError, lines });
+      let lines = perceptrons.map(this.generateLine).map((line, i) => ({
+        label: "Hyperplano " + i,
+        data: line,
+        type: "line",
+        backgroundColor: "rgba(255,255,255, 0)",
+        borderColor: "rgba(0,100,255, 1)",
+        hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
+        hoverBorderColor: "rgba(230, 236, 235, 0.75)",
+      }));
+      this.props.onSubmit({ error: layerError, lines });
       this.setState({ actualOutputs });
       await this.sleep(0.1);
     }
@@ -97,7 +97,7 @@ class ParametersForm extends Component {
       return perceptron;
     });
 
-    this._calculateWeights(perceptrons);
+    this._calculateWeights(perceptrons, _inputs);
   }
 
   getPerceptron(length) {
