@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Perceptron } from "./../utils/Perceptron";
 import { unzip, groupBy, mapValues, entries } from "lodash";
+import randomColor from "randomcolor";
 
 class ParametersForm extends Component {
   state = {
@@ -82,7 +83,7 @@ class ParametersForm extends Component {
       data: categorized.map(([x, y]) => ({ x, y })),
       type: "scatter",
       backgroundColor: "rgba(255,255,255, 0)",
-      borderColor: "rgba(0,100,255, 1)",
+      borderColor: randomColor(),
       hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
       hoverBorderColor: "rgba(230, 236, 235, 0.75)",
     }));
