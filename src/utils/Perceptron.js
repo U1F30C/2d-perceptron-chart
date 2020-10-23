@@ -29,6 +29,10 @@ function Perceptron(weights, bias, step = 0.01) {
     return true;
   };
 
+  perceptron.currentPredictions = function () {
+    return perceptron.rules.map((rule) => perceptron.predict(rule.inputs));
+  };
+
   perceptron.error = function () {
     let accum = 0;
     perceptron.rules.forEach((rule) => {
