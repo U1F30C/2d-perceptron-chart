@@ -3,7 +3,10 @@ import { Perceptron } from "./../utils/Perceptron";
 import { unzip } from "lodash";
 
 class ParametersForm extends Component {
-  state = { inputs: "0,0\n0,1\n1,0\n1,1", outputs: "0,0,0,1\n1,0,0,1\n1,0,1,0\n1,1,1,0" };
+  state = {
+    inputs: "0,0\n0,1\n1,0\n1,1",
+    outputs: "0,0,0,1\n1,0,0,1\n1,0,1,0\n1,1,1,0",
+  };
   handleChange = this.handleChange.bind(this);
   calculateWeights = this.calculateWeights.bind(this);
 
@@ -26,12 +29,20 @@ class ParametersForm extends Component {
       actualOutputs = actualOutputs
         .map((actualOutput) => actualOutput.join(","))
         .join("\n");
-      this.props.onSubmit(layerError);
+
+        let lines = perceptrons.map(this.generateLine).map((line, i) => ({
+          label: "Hyperplano " + i,
+          data: line,
+          type: "line",
+          backgroundColor: "rgba(255,255,255, 0)",
+          borderColor: "rgba(0,100,255, 1)",
+          hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
+          hoverBorderColor: "rgba(230, 236, 235, 0.75)",
+        }));
+        this.props.onSubmit({ error: layerError, lines });
       this.setState({ actualOutputs });
       await this.sleep(0.1);
     }
-
-
 
     layerError = 0;
     actualOutputs = [];
@@ -43,8 +54,30 @@ class ParametersForm extends Component {
     actualOutputs = actualOutputs
       .map((actualOutput) => actualOutput.join(","))
       .join("\n");
-    this.props.onSubmit(layerError);
+
+    let lines = perceptrons.map(this.generateLine).map((line, i) => ({
+      label: "Hyperplano " + i,
+      data: line,
+      type: "line",
+      backgroundColor: "rgba(255,255,255, 0)",
+      borderColor: "rgba(0,100,255, 1)",
+      hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
+      hoverBorderColor: "rgba(230, 236, 235, 0.75)",
+    }));
+    this.props.onSubmit({ error: layerError, lines });
     this.setState({ actualOutputs });
+  }
+
+  generateLine(perceptron) {
+    const [w1, w2] = perceptron.weights;
+    const bias = perceptron.bias;
+    // y = b/w2 - w1x1/w2
+    let leftLimit = -1,
+      rightLimit = 2;
+
+    let p1 = { x: leftLimit, y: bias / w2 - (w1 * leftLimit) / w2 };
+    let p2 = { x: rightLimit, y: bias / w2 - (w1 * rightLimit) / w2 };
+    return [p1, p2];
   }
 
   async calculateWeights(e) {

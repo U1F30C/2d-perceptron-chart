@@ -4,15 +4,18 @@ import ParametersForm from "./ParametersForm";
 import { Line } from "react-chartjs-2";
 
 class PerceptronVisualizer extends Component {
-  state = { line: [] };
+  state = { error: [], lines: [] };
   constructor(props) {
     super(props);
     this.updateState = this.updateState.bind(this);
   }
 
-  updateState(error) {
-    const { line } = this.state;
-    this.setState({ line: [...line, { x: line.length, y: error }] });
+  updateState({ error: currentError, lines }) {
+    const { error } = this.state;
+    this.setState({
+      error: [...error, { x: error.length, y: currentError }],
+      lines,
+    });
   }
 
   render() {
@@ -21,11 +24,11 @@ class PerceptronVisualizer extends Component {
         <ParametersForm onSubmit={this.updateState} />
         <Line
           data={{
-            labels: [...Array(this.state.line.length)].map((_, i) => i + ""),
+            labels: [...Array(this.state.error.length)].map((_, i) => i + ""),
             datasets: [
               {
                 label: "Error",
-                data: this.state.line,
+                data: this.state.error,
                 // type: "line",
                 backgroundColor: "rgba(255,255,255, 0)",
                 borderColor: "rgba(0,100,255, 1)",
@@ -33,6 +36,16 @@ class PerceptronVisualizer extends Component {
                 hoverBorderColor: "rgba(230, 236, 235, 0.75)",
               },
             ],
+            options,
+          }}
+          width={300}
+          height={300}
+        />
+
+        <Line
+          data={{
+            // labels: [...Array(this.state.line.length)],
+            datasets: this.state.lines,
             options,
           }}
           width={300}
