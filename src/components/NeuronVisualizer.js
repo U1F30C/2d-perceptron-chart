@@ -4,7 +4,7 @@ import { range } from "lodash";
 
 import { Line } from "react-chartjs-2";
 
-class PerceptronVisualizer extends Component {
+class NeuronVisualizer extends Component {
   state = { error: [], lines: [] };
   constructor(props) {
     super(props);
@@ -75,4 +75,4 @@ let options = {
   responsive: true,
 };
 
-export default PerceptronVisualizer;
+export default NeuronVisualizer;
