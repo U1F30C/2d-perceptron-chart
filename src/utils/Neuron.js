@@ -60,7 +60,7 @@ function Neuron(weights, bias, step = 0.01) {
       let diff = step * error;
       neuron.bias -= diff;
       for (let i = 0; i < neuron.weights.length; i++) {
-        neuron.weights[i] = neuron.weights[i] + diff * rule.inputs[i];
+        neuron.weights[i] += diff * rule.inputs[i];
       }
     }
   };
