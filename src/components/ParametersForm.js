@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Neuron } from "./../utils/Neuron";
+import { Layer } from "./../utils/Layer";
 import { unzip, groupBy, mapValues, entries } from "lodash";
 import randomColor from "randomcolor";
 
@@ -15,23 +15,16 @@ class ParametersForm extends Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  async _calculateWeights(neurons, inputs) {
-    let layerError;
+  async _calculateWeights(layer, inputs) {
     let actualOutputs;
-    while (!neurons.every((neuron) => neuron.converges())) {
-      layerError = 0;
-      actualOutputs = [];
-      neurons.forEach((neuron) => {
-        neuron.train();
-        layerError += neuron.error();
-        actualOutputs.push(neuron.currentPredictions());
-      });
+    while (!layer.converges()) {
+      actualOutputs = layer.train();
       actualOutputs = unzip(actualOutputs);
       actualOutputs = actualOutputs
         .map((actualOutput) => actualOutput.join(","))
         .join("\n");
 
-      let lines = neurons.map(this.generateLine).map((line, i) => ({
+      let lines = layer.neurons.map(this.generateLine).map((line, i) => ({
         label: "Hyperplano " + i,
         data: line,
         type: "line",
@@ -41,7 +34,7 @@ class ParametersForm extends Component {
         hoverBorderColor: "rgba(230, 236, 235, 0.75)",
       }));
       const categories = entries(
-        groupBy(inputs, (input) => this.categorize(input, neurons))
+        groupBy(inputs, (input) => layer.categorize(input))
       ).map(([category, categorized]) => ({
         label: "Categoria " + category,
         data: categorized.map(([x, y]) => ({ x, y })),
@@ -51,51 +44,10 @@ class ParametersForm extends Component {
         hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
         hoverBorderColor: "rgba(230, 236, 235, 0.75)",
       }));
-      this.props.onSubmit({ error: layerError, lines, categories });
+      this.props.onSubmit({ error: layer.error, lines, categories });
       this.setState({ actualOutputs });
       await this.sleep(0.1);
     }
-
-    layerError = 0;
-    actualOutputs = [];
-    neurons.forEach((neuron) => {
-      layerError += Math.pow(neuron.error(), 2);
-      actualOutputs.push(neuron.currentPredictions());
-    });
-    actualOutputs = unzip(actualOutputs);
-    actualOutputs = actualOutputs
-      .map((actualOutput) => actualOutput.join(","))
-      .join("\n");
-
-    let lines = neurons.map(this.generateLine).map((line, i) => ({
-      label: "Hyperplano " + i,
-      data: line,
-      type: "line",
-      backgroundColor: "rgba(255,255,255, 0)",
-      borderColor: "rgba(0,100,255, 1)",
-      hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
-      hoverBorderColor: "rgba(230, 236, 235, 0.75)",
-    }));
-    const categories = entries(
-      groupBy(inputs, (input) => this.categorize(input, neurons))
-    ).map(([category, categorized]) => ({
-      label: "Categoria " + category,
-      data: categorized.map(([x, y]) => ({ x, y })),
-      type: "scatter",
-      backgroundColor: "rgba(255,255,255, 0)",
-      borderColor: randomColor(),
-      hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
-      hoverBorderColor: "rgba(230, 236, 235, 0.75)",
-    }));
-    this.props.onSubmit({ error: layerError, lines, categories });
-    this.setState({ actualOutputs });
-  }
-
-  categorize(input, neurons) {
-    return neurons.reduce(
-      (acc, neuron) => acc + neuron.predict(input),
-      ""
-    );
   }
 
   generateLine(neuron) {
@@ -118,23 +70,8 @@ class ParametersForm extends Component {
       .split("\n")
       .map((output) => output.split(",").map((output) => +output));
     _outputs = unzip(_outputs);
-
-    const neurons = _outputs.map((outputColumn) => {
-      let neuron = this.getNeuron(_inputs[0]?.length);
-      _inputs.forEach((inputRow, i) =>
-        neuron.addRule({ inputs: inputRow, target: outputColumn[i] })
-      );
-      return neuron;
-    });
-
-    this._calculateWeights(neurons, _inputs);
-  }
-
-  getNeuron(length) {
-    return Neuron(
-      Array.from(Array(length)).map((_) => Math.random()),
-      Math.random()
-    );
+    const layer = Layer(_inputs, _outputs);
+    this._calculateWeights(layer, _inputs);
   }
 
   sleep(seconds) {
