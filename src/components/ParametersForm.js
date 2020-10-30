@@ -35,15 +35,18 @@ class ParametersForm extends Component {
       }));
       const categories = entries(
         groupBy(inputs, (input) => layer.categorize(input))
-      ).map(([category, categorized]) => ({
-        label: "Categoria " + category,
-        data: categorized.map(([x, y]) => ({ x, y })),
-        type: "scatter",
-        backgroundColor: "rgba(255,255,255, 0)",
-        borderColor: "rgba(0,100,255, 1)",
-        hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
-        hoverBorderColor: "rgba(230, 236, 235, 0.75)",
-      }));
+      ).map(([category, categorized]) => {
+        const color = randomColor();
+        return {
+          label: "Categoria " + category,
+          data: categorized.map(([x, y]) => ({ x, y })),
+          type: "scatter",
+          backgroundColor: color,
+          borderColor: color,
+          hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
+          hoverBorderColor: "rgba(230, 236, 235, 0.75)",
+        };
+      });
       this.props.onSubmit({ error: layer.error, lines, categories });
       this.setState({ actualOutputs });
       await this.sleep(0.1);
