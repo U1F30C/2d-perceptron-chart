@@ -22,7 +22,7 @@ function Layer(inputs, outputs) {
   };
 
   layer.converges = function () {
-    neurons.every((neuron) => neuron.converges());
+    return neurons.every((neuron) => neuron.converges());
   };
 
   layer.train = function () {
