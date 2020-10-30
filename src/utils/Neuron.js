@@ -6,6 +6,15 @@ function dot(v1, v2) {
   return result;
 }
 
+function stepActivation(output) {
+  return output > 0 ? 1 : 0;
+}
+
+function sigmoidActivation(output) {
+  const ex = Math.exp(output);
+  return ex / (ex + 1);
+}
+
 function Neuron(weights, bias, step = 0.01) {
   let neuron = { weights, bias, rules: [] };
 
@@ -15,7 +24,7 @@ function Neuron(weights, bias, step = 0.01) {
 
   neuron.predict = function (inputs) {
     if (inputs.length !== neuron.weights.length) return null;
-    return _predict(inputs) > 0 ? 1 : 0;
+    return stepActivation(_predict(inputs));
   };
 
   neuron.converges = function () {
@@ -37,7 +46,7 @@ function Neuron(weights, bias, step = 0.01) {
     let accum = 0;
     neuron.rules.forEach((rule) => {
       let target = rule.target;
-      let actual = _predict(rule.inputs);
+      let actual = neuron.predict(rule.inputs);
       accum += Math.pow(target - actual, 2);
     });
     return accum / neuron.rules.length;
