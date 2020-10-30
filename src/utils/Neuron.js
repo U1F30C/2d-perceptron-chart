@@ -15,7 +15,7 @@ function sigmoidActivation(output) {
   return ex / (ex + 1);
 }
 
-function Neuron(weights, bias, step = 0.01) {
+function Neuron(weights, bias, step = 0.5) {
   let neuron = { weights, bias, rules: [] };
 
   function _predict(inputs) {
@@ -24,7 +24,7 @@ function Neuron(weights, bias, step = 0.01) {
 
   neuron.predict = function (inputs) {
     if (inputs.length !== neuron.weights.length) return null;
-    return stepActivation(_predict(inputs));
+    return sigmoidActivation(_predict(inputs));
   };
 
   neuron.converges = function () {

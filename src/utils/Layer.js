@@ -15,24 +15,25 @@ function Layer(inputs, outputs) {
     );
     return neuron;
   });
-  let layer = { neurons, error: 0 };
+  let layer = { neurons, error: Infinity };
 
   layer.categorize = function (input) {
     return neurons.reduce((acc, neuron) => acc + neuron.predict(input), "");
   };
 
-  layer.converges = function () {
-    return neurons.every((neuron) => neuron.converges());
+  layer.converges = function (error = 0.0001) {
+    return layer.error < error
   };
 
   layer.train = function () {
     const actualOutputs = [];
-    layer.error = 0;
+    let _error = 0;
     neurons.forEach((neuron) => {
       neuron.train();
-      layer.error += neuron.error();
+      _error += Math.pow(neuron.error(), 2);
       actualOutputs.push(neuron.currentPredictions());
     });
+    layer.error = _error / neurons.length;
     return actualOutputs;
   };
   return layer;
