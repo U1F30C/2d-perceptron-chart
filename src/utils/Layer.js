@@ -18,7 +18,7 @@ function Layer(inputs, outputs) {
   let layer = { neurons, error: Infinity };
 
   layer.categorize = function (input) {
-    return neurons.reduce((acc, neuron) => acc + neuron.predict(input), "");
+    return neurons.reduce((acc, neuron) => acc + Math.round(neuron.predict(input)), "");
   };
 
   layer.converges = function (error = 0.0001) {
