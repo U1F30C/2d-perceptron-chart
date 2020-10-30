@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import ParametersForm from "./ParametersForm";
 import { range } from "lodash";
 
-import { Line } from "react-chartjs-2";
+import { Line, Scatter } from "react-chartjs-2";
 
 class NeuronVisualizer extends Component {
   state = { error: [], lines: [] };
@@ -43,9 +43,9 @@ class NeuronVisualizer extends Component {
           height={300}
         />
 
-        <Line
+        <Scatter
           data={{
-            labels: range(-3, 5),
+            labels: range(-6, 6, 0.5),
             datasets: this.state.lines,
             options,
           }}
