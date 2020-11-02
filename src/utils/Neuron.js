@@ -25,6 +25,7 @@ function Neuron(inputQuantity = 2, step = 0.5) {
     weights,
     bias,
     predict,
+    adjust,
     training: {
       rules: [],
       addRule,
@@ -44,6 +45,14 @@ function Neuron(inputQuantity = 2, step = 0.5) {
       neuron.weights.push(Math.random());
 
     return sigmoidActivation(_predict(inputs));
+  }
+
+  function adjust(inputs, error) {
+    let diff = step * error;
+    neuron.bias -= diff;
+    for (let i = 0; i < neuron.weights.length; i++) {
+      neuron.weights[i] += diff * inputs[i];
+    }
   }
 
   function converges() {
@@ -79,14 +88,8 @@ function Neuron(inputQuantity = 2, step = 0.5) {
     neuron.training.rules.forEach((rule) => {
       let target = rule.target;
       let actual = neuron.predict(rule.inputs);
-      if (actual != target) {
-        let error = target - actual;
-        let diff = step * error;
-        neuron.bias -= diff;
-        for (let i = 0; i < neuron.weights.length; i++) {
-          neuron.weights[i] += diff * rule.inputs[i];
-        }
-      }
+      let error = target - actual;
+      if (target != actual) adjust(rule.inputs, error);
     });
   }
 
