@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Layer } from "./../utils/Layer";
-import { unzip, groupBy, mapValues, entries } from "lodash";
+import { unzip, groupBy, entries } from "lodash";
 import randomColor from "randomcolor";
 
 class ParametersForm extends Component {
@@ -73,7 +73,8 @@ class ParametersForm extends Component {
       .split("\n")
       .map((output) => output.split(",").map((output) => +output));
     _outputs = unzip(_outputs);
-    const layer = Layer(_inputs, _outputs);
+    const layer = Layer(_inputs[0].length);
+    layer.addTrainingData(_inputs, _outputs);
     this._calculateWeights(layer, _inputs);
   }
 

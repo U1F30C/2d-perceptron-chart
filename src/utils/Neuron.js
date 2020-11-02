@@ -15,7 +15,11 @@ function sigmoidActivation(output) {
   return ex / (ex + 1);
 }
 
-function Neuron(weights, bias, step = 0.5) {
+function Neuron(inputQuantity = 2, step = 0.5) {
+  let [weights, bias] = [
+    Array.from(Array(inputQuantity)).map((_) => Math.random()),
+    Math.random(),
+  ];
   let neuron = { weights, bias, rules: [] };
 
   function _predict(inputs) {
@@ -23,7 +27,9 @@ function Neuron(weights, bias, step = 0.5) {
   }
 
   neuron.predict = function (inputs) {
-    if (inputs.length !== neuron.weights.length) return null;
+    while (inputs.length > neuron.weights.length)
+      neuron.weights.push(Math.random());
+
     return sigmoidActivation(_predict(inputs));
   };
 
