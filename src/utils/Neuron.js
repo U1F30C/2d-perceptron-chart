@@ -20,21 +20,34 @@ function Neuron(inputQuantity = 2, step = 0.5) {
     Array.from(Array(inputQuantity)).map((_) => Math.random()),
     Math.random(),
   ];
-  let neuron = { weights, bias, rules: [] };
+
+  let neuron = {
+    weights,
+    bias,
+    predict,
+    training: {
+      rules: [],
+      addRule,
+      train,
+      error,
+      currentPredictions,
+      converges,
+    },
+  };
 
   function _predict(inputs) {
     return dot(neuron.weights, inputs) - neuron.bias;
   }
 
-  neuron.predict = function (inputs) {
+  function predict(inputs) {
     while (inputs.length > neuron.weights.length)
       neuron.weights.push(Math.random());
 
     return sigmoidActivation(_predict(inputs));
-  };
+  }
 
-  neuron.converges = function () {
-    for (const rule of neuron.rules) {
+  function converges() {
+    for (const rule of neuron.training.rules) {
       let desired = rule.target;
 
       if (neuron.predict(rule.inputs) != desired) {
@@ -42,44 +55,40 @@ function Neuron(inputQuantity = 2, step = 0.5) {
       }
     }
     return true;
-  };
+  }
 
-  neuron.currentPredictions = function () {
-    return neuron.rules.map((rule) => neuron.predict(rule.inputs));
-  };
+  function currentPredictions() {
+    return neuron.training.rules.map((rule) => neuron.predict(rule.inputs));
+  }
 
-  neuron.error = function () {
+  function error() {
     let accum = 0;
-    neuron.rules.forEach((rule) => {
+    neuron.training.rules.forEach((rule) => {
       let target = rule.target;
       let actual = neuron.predict(rule.inputs);
       accum += Math.pow(target - actual, 2);
     });
-    return accum / neuron.rules.length;
-  };
+    return accum / neuron.training.rules.length;
+  }
 
-  const train = function (rule) {
-    let target = rule.target;
-    let actual = neuron.predict(rule.inputs);
-    if (actual != target) {
-      let error = target - actual;
-      let diff = step * error;
-      neuron.bias -= diff;
-      for (let i = 0; i < neuron.weights.length; i++) {
-        neuron.weights[i] += diff * rule.inputs[i];
+  function addRule(rule) {
+    neuron.training.rules.push(rule);
+  }
+
+  function train() {
+    neuron.training.rules.forEach((rule) => {
+      let target = rule.target;
+      let actual = neuron.predict(rule.inputs);
+      if (actual != target) {
+        let error = target - actual;
+        let diff = step * error;
+        neuron.bias -= diff;
+        for (let i = 0; i < neuron.weights.length; i++) {
+          neuron.weights[i] += diff * rule.inputs[i];
+        }
       }
-    }
-  };
-
-  neuron.addRule = function (rule) {
-    neuron.rules.push(rule);
-  };
-
-  neuron.train = function () {
-    neuron.rules.forEach((rule) => {
-      train(rule);
     });
-  };
+  }
 
   return neuron;
 }
