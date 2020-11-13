@@ -84,4 +84,16 @@ function Neuron(inputQuantity = 2, step = 0.5) {
   return neuron;
 }
 
+function generateLine(neuron) {
+  const [w1, w2] = neuron.weights;
+  const bias = neuron.bias;
+  // y = b/w2 - w1x1/w2
+  let leftLimit = -2,
+    rightLimit = 3;
+
+  let p1 = { x: leftLimit, y: bias / w2 - (w1 * leftLimit) / w2 };
+  let p2 = { x: rightLimit, y: bias / w2 - (w1 * rightLimit) / w2 };
+  return [p1, p2];
+}
+
 export { Neuron };

@@ -15,7 +15,7 @@ class NeuronVisualizer extends Component {
     const { error } = this.state;
     this.setState({
       error: [...error, { x: error.length, y: currentError }],
-      lines: [...lines, ...categories],
+      lines: categories,
     });
   }
 
@@ -23,7 +23,7 @@ class NeuronVisualizer extends Component {
     return (
       <div>
         <ParametersForm onSubmit={this.updateState} />
-        <Line
+        {/* <Line
           data={{
             labels: [...Array(this.state.error.length)].map((_, i) => i + ""),
             datasets: [
@@ -41,7 +41,7 @@ class NeuronVisualizer extends Component {
           }}
           width={300}
           height={300}
-        />
+        /> */}
 
         <Scatter
           data={{

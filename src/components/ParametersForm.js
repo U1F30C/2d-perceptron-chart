@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { Layer } from "./../utils/Layer";
-import { unzip, groupBy, entries } from "lodash";
+import { unzip, groupBy, entries, flatMap, range } from "lodash";
 import randomColor from "randomcolor";
+import { Network } from "../utils/Network";
 
 class ParametersForm extends Component {
   state = {
@@ -17,52 +18,30 @@ class ParametersForm extends Component {
 
   async _calculateWeights(layer, inputs) {
     let actualOutputs;
-    while (!layer.converges()) {
-      actualOutputs = layer.train();
-      actualOutputs = unzip(actualOutputs);
-      actualOutputs = actualOutputs
-        .map((actualOutput) => actualOutput.join(","))
-        .join("\n");
+    // while (!layer.converges()) {
+    actualOutputs = layer.train();
+    actualOutputs = unzip(actualOutputs);
+    actualOutputs = actualOutputs
+      .map((actualOutput) => actualOutput.join(","))
+      .join("\n");
 
-      let lines = layer.neurons.map(this.generateLine).map((line, i) => ({
-        label: "Hyperplano " + i,
-        data: line,
-        type: "line",
-        backgroundColor: "rgba(255,255,255, 0)",
-        borderColor: "rgba(0,100,255, 1)",
-        hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
-        hoverBorderColor: "rgba(230, 236, 235, 0.75)",
-      }));
-      const categories = entries(
-        groupBy(inputs, (input) => layer.categorize(input))
-      ).map(([category, categorized]) => {
-        const color = randomColor();
-        return {
-          label: "Categoria " + category,
-          data: categorized.map(([x, y]) => ({ x, y })),
-          type: "scatter",
-          backgroundColor: color,
-          borderColor: color,
-          hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
-          hoverBorderColor: "rgba(230, 236, 235, 0.75)",
-        };
-      });
-      this.props.onSubmit({ error: layer.error, lines, categories });
-      this.setState({ actualOutputs });
-      await this.sleep(0.1);
-    }
-  }
-
-  generateLine(neuron) {
-    const [w1, w2] = neuron.weights;
-    const bias = neuron.bias;
-    // y = b/w2 - w1x1/w2
-    let leftLimit = -2,
-      rightLimit = 3;
-
-    let p1 = { x: leftLimit, y: bias / w2 - (w1 * leftLimit) / w2 };
-    let p2 = { x: rightLimit, y: bias / w2 - (w1 * rightLimit) / w2 };
-    return [p1, p2];
+    inputs = flatMap(
+      range(-30, 30, 1).map((x) => range(-30, 30, 1).map((y) => [x, y]))
+    );
+    const network = Network(null, null, [2, 1]);
+    const categories = entries(
+      groupBy(inputs, (input) => Math.round(network.forward(input)))
+    ).map(([category, categorized]) => {
+      return generateSet(
+        (category == 1 ? "Unos " : "Ceros ") + category,
+        categorized.map(([x, y]) => ({ x, y })),
+        "scatter"
+      );
+    });
+    this.props.onSubmit({ error: layer.error, lines: null, categories });
+    this.setState({ actualOutputs });
+    await this.sleep(0.1);
+    // }
   }
 
   async calculateWeights(e) {
@@ -121,3 +100,17 @@ class ParametersForm extends Component {
 }
 
 export default ParametersForm;
+
+function generateSet(label, data, type) {
+  const color = randomColor();
+
+  return {
+    label,
+    data,
+    type,
+    backgroundColor: color,
+    borderColor: color,
+    hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
+    hoverBorderColor: "rgba(230, 236, 235, 0.75)",
+  };
+}

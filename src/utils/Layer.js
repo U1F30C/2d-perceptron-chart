@@ -38,6 +38,10 @@ function Layer(descriptor) {
     layer.error = _error / layer.neurons.length;
     return actualOutputs;
   };
+
+  layer.predict = function (inputs) {
+    return layer.neurons.map((neuron) => neuron.predict(inputs));
+  };
   return layer;
 }
 
