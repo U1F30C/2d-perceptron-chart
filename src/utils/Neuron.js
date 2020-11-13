@@ -32,7 +32,6 @@ function Neuron(inputQuantity = 2, step = 0.5) {
       train,
       error,
       currentPredictions,
-      converges,
     },
   };
 
@@ -53,17 +52,6 @@ function Neuron(inputQuantity = 2, step = 0.5) {
     for (let i = 0; i < neuron.weights.length; i++) {
       neuron.weights[i] += diff * inputs[i];
     }
-  }
-
-  function converges() {
-    for (const rule of neuron.training.rules) {
-      let desired = rule.target;
-
-      if (neuron.predict(rule.inputs) != desired) {
-        return false;
-      }
-    }
-    return true;
   }
 
   function currentPredictions() {
