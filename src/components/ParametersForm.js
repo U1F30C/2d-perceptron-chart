@@ -64,7 +64,13 @@ class ParametersForm extends Component {
     _outputs = _outputs
       .split("\n")
       .map((output) => output.split(",").map((output) => +output));
-    const network = Network([3, _outputs[0].length], 0.9);
+    const network = Network(
+      [
+        [3, "sigmoid"],
+        [_outputs[0].length, "sigmoid"],
+      ],
+      0.9
+    );
     network.trainingData = _inputs.map((inputSet, i) => [
       inputSet,
       _outputs[i],
