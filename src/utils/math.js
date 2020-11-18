@@ -8,31 +8,6 @@ function dot(v1, v2) {
   return result;
 }
 
-function stepActivation(output) {
-  return output > 0 ? 1 : 0;
-}
-
-function sigmoidActivation(output) {
-  const ex = Math.exp(-output);
-  return 1 / (ex + 1);
-}
-
-function reluActivation(output) {
-  return Math.max(0, output);
-}
-
-function lreluActivation(output) {
-  return Math.max(0.1 * output, output);
-}
-
-function linearActivation(output) {
-  return output;
-}
-
-function delta(output, error) {
-  return output * (1 - output) * error;
-}
-
 function generateLine(neuron) {
   const [w1, w2] = neuron.weights;
   const bias = neuron.bias;
@@ -49,12 +24,46 @@ function mse(arr) {
   return sumBy(arr, (x) => Math.pow(x, 2)) / arr.length;
 }
 
-export {
-  dot,
-  sigmoidActivation,
-  linearActivation,
-  reluActivation,
-  lreluActivation,
-  delta,
-  mse,
+const activations = {
+  step: {
+    activation: function (output) {
+      return output > 0 ? 1 : 0;
+    },
+    delta: null,
+  },
+  sigmoid: {
+    activation: function (output) {
+      const ex = Math.exp(-output);
+      return 1 / (ex + 1);
+    },
+    delta: function (output, error) {
+      return output * (1 - output) * error;
+    },
+  },
+  relu: {
+    activation: function (output) {
+      return Math.max(0, output);
+    },
+    delta: function (output, error) {
+      return (output < 0 ? 0 : 1) * error;
+    },
+  },
+  lrelu: {
+    activation: function (output) {
+      return Math.max(0.1 * output, output);
+    },
+    delta: function (output, error) {
+      return (output < 0 ? 0.1 : 1) * error;
+    },
+  },
+  linear: {
+    activation: function (output) {
+      return output;
+    },
+    delta: function (output, error) {
+      return 1;
+    },
+  },
 };
+
+export { dot, activations, mse };
