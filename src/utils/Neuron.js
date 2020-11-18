@@ -1,6 +1,6 @@
 import { dot, sigmoidActivation } from "./math";
 
-function Neuron(inputQuantity = 2) {
+function Neuron(inputQuantity = 1) {
   let [weights, bias] = [
     Array.from(Array(inputQuantity)).map((_) => Math.random()),
     Math.random(),
