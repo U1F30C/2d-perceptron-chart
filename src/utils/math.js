@@ -13,8 +13,20 @@ function stepActivation(output) {
 }
 
 function sigmoidActivation(output) {
-  const ex = Math.exp(output);
-  return ex / (ex + 1);
+  const ex = Math.exp(-output);
+  return 1 / (ex + 1);
+}
+
+function reluActivation(output) {
+  return Math.max(0, output);
+}
+
+function lreluActivation(output) {
+  return Math.max(0.1 * output, output);
+}
+
+function linearActivation(output) {
+  return output;
 }
 
 function delta(output, error) {
@@ -37,4 +49,12 @@ function mse(arr) {
   return sumBy(arr, (x) => Math.pow(x, 2)) / arr.length;
 }
 
-export { dot, sigmoidActivation, delta, mse };
+export {
+  dot,
+  sigmoidActivation,
+  linearActivation,
+  reluActivation,
+  lreluActivation,
+  delta,
+  mse,
+};
