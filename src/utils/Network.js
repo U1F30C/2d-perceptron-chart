@@ -35,7 +35,7 @@ function Network(layerDescriptors, learningRate = 0.5) {
       network.forward(inputs);
       outLayer.neurons.forEach((neuron, i) => {
         neuron.error = outputs[i] - neuron.output;
-        neuron.delta = delta(neuron.output, neuron.error);
+        neuron.delta = neuron.deltaFunction(neuron.output, neuron.error);
       });
 
       for (let l = network.layers.length - 2; l >= 0; l--) {
@@ -46,7 +46,7 @@ function Network(layerDescriptors, learningRate = 0.5) {
             })
           );
 
-          neuron.delta = delta(neuron.output, neuron.error);
+          neuron.delta =  neuron.deltaFunction(neuron.output, neuron.error);
 
           network.layers[l + 1].neurons.forEach((nextNeur) =>
             nextNeur.adjust(nextNeur.inputs, learningRate * nextNeur.delta)

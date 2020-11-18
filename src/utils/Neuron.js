@@ -1,6 +1,6 @@
-import { dot, sigmoidActivation } from "./math";
+import { dot, activations } from "./math";
 
-function Neuron(inputQuantity = 1) {
+function Neuron(inputQuantity = 1, type = "linear") {
   let [weights, bias] = [
     Array.from(Array(inputQuantity)).map((_) => Math.random()),
     Math.random(),
@@ -13,6 +13,7 @@ function Neuron(inputQuantity = 1) {
     adjust,
     inputs: null,
     output: null,
+    deltaFunction: activations[type].delta,
   };
 
   function _predict(inputs) {
@@ -23,7 +24,7 @@ function Neuron(inputQuantity = 1) {
     while (inputs.length > neuron.weights.length)
       neuron.weights.push(Math.random());
     neuron.inputs = inputs;
-    neuron.output = sigmoidActivation(_predict(inputs));
+    neuron.output = activations[type].function(_predict(inputs));
 
     return neuron.output;
   }

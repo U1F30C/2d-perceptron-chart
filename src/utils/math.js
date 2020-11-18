@@ -26,13 +26,13 @@ function mse(arr) {
 
 const activations = {
   step: {
-    activation: function (output) {
+    function: function (output) {
       return output > 0 ? 1 : 0;
     },
     delta: null,
   },
   sigmoid: {
-    activation: function (output) {
+    function: function (output) {
       const ex = Math.exp(-output);
       return 1 / (ex + 1);
     },
@@ -41,7 +41,7 @@ const activations = {
     },
   },
   relu: {
-    activation: function (output) {
+    function: function (output) {
       return Math.max(0, output);
     },
     delta: function (output, error) {
@@ -49,7 +49,7 @@ const activations = {
     },
   },
   lrelu: {
-    activation: function (output) {
+    function: function (output) {
       return Math.max(0.1 * output, output);
     },
     delta: function (output, error) {
@@ -57,11 +57,11 @@ const activations = {
     },
   },
   linear: {
-    activation: function (output) {
+    function: function (output) {
       return output;
     },
     delta: function (output, error) {
-      return 1;
+      return 1 * error;
     },
   },
 };

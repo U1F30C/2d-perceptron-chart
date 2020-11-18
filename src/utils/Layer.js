@@ -1,8 +1,8 @@
 import { Neuron } from "./../utils/Neuron";
 
-function Layer(descriptor) {
+function Layer([size, activation]) {
   let layer = {
-    neurons: Array.from(Array(descriptor)).map(Neuron),
+    neurons: Array.from(Array(size)).map((_) => Neuron(1, activation)),
     error: Infinity,
     predict,
   };
