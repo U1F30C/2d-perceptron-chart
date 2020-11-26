@@ -49,7 +49,7 @@ function Network(layerDescriptors, learningRate = 0.5) {
           neuron.delta =  neuron.deltaFunction(neuron.output, neuron.error);
 
           network.layers[l + 1].neurons.forEach((nextNeur) =>
-            nextNeur.adjust(nextNeur.inputs, learningRate * nextNeur.delta)
+            nextNeur.adjust(learningRate * nextNeur.delta)
           );
         });
       }

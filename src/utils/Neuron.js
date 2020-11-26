@@ -29,10 +29,10 @@ function Neuron(inputQuantity = 1, type = "linear") {
     return neuron.output;
   }
 
-  function adjust(inputs, delta) {
+  function adjust(delta) {
     neuron.bias -= delta;
     for (let i = 0; i < neuron.weights.length; i++) {
-      neuron.weights[i] += delta * inputs[i];
+      neuron.weights[i] += delta * neuron.inputs[i];
     }
   }
 
