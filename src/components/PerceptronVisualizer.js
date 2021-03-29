@@ -3,7 +3,8 @@ import ParametersForm from "./ParametersForm";
 import { Neuron } from "./../utils/Neuron";
 
 import { Scatter } from "react-chartjs-2";
-import { generateLine } from "../utils/math";
+import { generateLine, normalize, denormalize } from "../utils/math";
+import { min, max } from "lodash";
 
 class PerceptronVisualizer extends Component {
   state = { line: [], positive: [], negative: [] };
@@ -26,14 +27,14 @@ class PerceptronVisualizer extends Component {
   }
 
   async train(data) {
-    const learningRate = 0.3;
+    const learningRate = 0.6;
     while (!this.converges(data)) {
       data.forEach(([inputs, outputs]) => {
         const gradient =
           (-this.neuron.predict(inputs) + outputs[0]) * learningRate;
         this.neuron.adjust(gradient);
       });
-      await this.sleep(0.1);
+      await this.sleep(0.001);
     }
   }
   sleep(seconds) {
@@ -49,14 +50,37 @@ class PerceptronVisualizer extends Component {
         return { x, y };
       });
   }
+  normalizeSet(rules) {
+    const allX = rules.map(([inputs]) => inputs[0]);
+    const minX = min(allX);
+    const maxX = max(allX);
+    const allY = rules.map(([inputs]) => inputs[1]);
+    const minY = min(allY);
+    const maxY = max(allY);
+    rules = rules.map(([inputs, outputs]) => {
+      return [
+        [normalize(inputs[0], minX, maxX), normalize(inputs[1], minY, maxY)],
+        outputs,
+      ];
+    });
+    return { data: rules, allX, minX, maxX, allY, minY, maxY };
+  }
+
   async handleDataChange(data) {
-    await this.train(data);
     const positive = this.separateSet(data, 1);
     const negative = this.separateSet(data, 0);
     this.setState({
-      line: generateLine(...this.neuron.weights),
       positive,
       negative,
+    });
+    const normalizationData = this.normalizeSet(data);
+    await this.train(normalizationData.data);
+    const line = generateLine(...this.neuron.weights, 0, 1);
+    this.setState({
+      line: line.map(({ x, y }) => ({
+        y: denormalize(y, normalizationData.minY, normalizationData.maxY),
+        x: denormalize(x, normalizationData.minX, normalizationData.maxX),
+      })),
     });
   }
   render() {
@@ -76,7 +100,7 @@ class PerceptronVisualizer extends Component {
                 hoverBorderColor: "rgba(230, 236, 235, 0.75)",
               },
               {
-                label: "Positivos",
+                label: "Con obesidad",
                 data: this.state.positive,
                 type: "scatter",
                 backgroundColor: "rgba(0,255,0, 1)",
@@ -85,7 +109,7 @@ class PerceptronVisualizer extends Component {
                 hoverBorderColor: "rgba(230, 236, 235, 0.75)",
               },
               {
-                label: "Negativos",
+                label: "Sin obesidad",
                 data: this.state.negative,
                 type: "scatter",
                 backgroundColor: "rgba(255,0,0, 1)",
