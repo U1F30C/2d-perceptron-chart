@@ -1,22 +1,68 @@
 import React, { Component } from "react";
 import ParametersForm from "./ParametersForm";
+import { Neuron } from "./../utils/Neuron";
 
 import { Scatter } from "react-chartjs-2";
+import { generateLine } from "../utils/math";
 
 class PerceptronVisualizer extends Component {
   state = { line: [], positive: [], negative: [] };
   constructor(props) {
     super(props);
-    this.updateState = this.updateState.bind(this);
+    this.handleDataChange = this.handleDataChange.bind(this);
+    this.neuron = new Neuron(1, (x) => (x > 0 ? 1 : 0));
+  }
+  neuron;
+  converges(data) {
+    for (const [inputs, outputs] of data) {
+      const desired = outputs.slice(-1)[0];
+      const actual = this.neuron.predict(inputs);
+      console.log(inputs, desired, actual);
+      if (actual != desired) {
+        return false;
+      }
+    }
+    return true;
   }
 
-  updateState(state) {
-    this.setState(state);
+  async train(data) {
+    const learningRate = 0.3;
+    while (!this.converges(data)) {
+      data.forEach(([inputs, outputs]) => {
+        const gradient =
+          (-this.neuron.predict(inputs) + outputs[0]) * learningRate;
+        this.neuron.adjust(gradient);
+      });
+      await this.sleep(0.1);
+    }
+  }
+  sleep(seconds) {
+    return new Promise((resolve, _reject) => {
+      setTimeout(resolve, 1000 * seconds);
+    });
+  }
+  separateSet(data, label) {
+    return data
+      .filter(([_, outputs]) => outputs.slice(-1)[0] == label)
+      .map(([inputs]) => {
+        let [x, y] = inputs;
+        return { x, y };
+      });
+  }
+  async handleDataChange(data) {
+    await this.train(data);
+    const positive = this.separateSet(data, 1);
+    const negative = this.separateSet(data, 0);
+    this.setState({
+      line: generateLine(...this.neuron.weights),
+      positive,
+      negative,
+    });
   }
   render() {
     return (
       <div>
-        <ParametersForm onSubmit={this.updateState} />
+        <ParametersForm onChange={this.handleDataChange} />
         <Scatter
           data={{
             datasets: [

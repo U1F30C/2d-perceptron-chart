@@ -1,113 +1,56 @@
 import React, { Component } from "react";
-import { Perceptron } from "./../utils/Perceptron";
+import { Form, Button } from "react-bootstrap";
+import { zip } from "lodash";
 
 class ParametersForm extends Component {
-  state = { weights: "1,1", bias: "1", rules: "0,0,0\n0,1,1\n1,0,1\n1,1,1" };
+  state = { inputs: "0,0\n0,1\n1,0\n1,1", outputs: "0\n0\n0\n1" };
   handleChange = this.handleChange.bind(this);
-  calculateWeights = this.calculateWeights.bind(this);
+  submit = this.submit.bind(this);
+  splitData(text) {
+    return text.split("\n").map((line) => line.split(",").map((x) => +x));
+  }
+  submit() {
+    let { inputs, outputs } = this.state;
+    inputs = this.splitData(inputs);
+    outputs = this.splitData(outputs);
+
+    const rules = zip(inputs, outputs);
+    this.props.onChange(rules);
+  }
 
   handleChange(event) {
-    this.setState({ [event.target.name]: event.target.value }, () => {
-      let result = {};
-      let { rules, bias, weights } = this.state;
-      bias = +bias;
-      let [w1, w2] = weights.split(",").map((v) => +v);
-      result.positive = this.separateSet(rules, "1");
-      result.negative = this.separateSet(rules, "0");
-
-      result.line = this.generateLine(w1, w2, bias);
-
-      this.props.onSubmit(result);
-    });
+    event.stopPropagation();
+    this.setState({ [event.target.name]: event.target.value }, () => {});
   }
 
-  generateLine(w1, w2, bias) {
-    // y = b/w2 - w1x1/w2
-    let leftLimit = -1,
-      rightLimit = 2;
-
-    let p1 = { x: leftLimit, y: bias / w2 - (w1 * leftLimit) / w2 };
-    let p2 = { x: rightLimit, y: bias / w2 - (w1 * rightLimit) / w2 };
-    return [p1, p2];
-  }
-
-  separateSet(rules, label) {
-    return rules
-      .split("\n")
-      .map((rule) => rule.split(","))
-      .filter((rule) => rule.slice(-1) == label)
-      .map((rule) => {
-        let [x, y] = rule.map((v) => +v);
-        return { x, y };
-      });
-  }
-
-  async calculateWeights(e) {
-    e.preventDefault();
-
-    let result = {};
-    let { rules } = this.state;
-    result.positive = this.separateSet(rules, "1");
-    result.negative = this.separateSet(rules, "0");
-
-    let trainingRules = rules
-      .split("\n")
-      .map((rule) => rule.split(",").map((e) => +e));
-    let perceptron = Perceptron([Math.random(), Math.random()], Math.random());
-    while (!perceptron.converges(trainingRules)) {
-      trainingRules.forEach((rule) => {
-        perceptron.train(rule);
-      });
-      await this.sleep(0.1);
-      let [w1, w2] = perceptron.weights;
-      result.line = this.generateLine(w1, w2, perceptron.bias);
-      this.props.onSubmit(result);
-      this.setState({
-        weights: perceptron.weights.join(","),
-        bias: perceptron.bias.toString(),
-      });
-    }
-  }
-
-  sleep(seconds) {
-    return new Promise((resolve, _reject) => {
-      setTimeout(resolve, 1000 * seconds);
-    });
-  }
   render() {
     return (
-      <form>
-        <label>
-          Pesos:
-          <input
+      <Form>
+        <Form.Label>
+          Entradas:
+          <Form.Control
+            as="textarea"
             type="text"
-            name="weights"
-            value={this.state.weights}
+            name="inputs"
+            rows={4}
+            value={this.state.inputs}
             onChange={this.handleChange}
           />
-        </label>
-        <br />
-        <label>
-          Umbral:
-          <input
+        </Form.Label>
+        <Form.Label>
+          Salidas:
+          <Form.Control
+            as="textarea"
             type="text"
-            name="bias"
-            value={this.state.bias}
+            name="outputs"
+            rows={4}
+            value={this.state.outputs}
             onChange={this.handleChange}
           />
-        </label>
+        </Form.Label>
         <br />
-        <label>
-          Reglas:
-          <textarea
-            name="rules"
-            value={this.state.rules}
-            onChange={this.handleChange}
-          />
-        </label>
-        <br />
-        <button onClick={this.calculateWeights}>Calcular</button>
-      </form>
+        <Button onClick={this.submit}>Calcular</Button>
+      </Form>
     );
   }
 }
