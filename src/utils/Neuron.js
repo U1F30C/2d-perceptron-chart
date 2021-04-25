@@ -14,7 +14,7 @@ class Neuron {
   }
 
   predict(inputs) {
-    inputs = [...inputs, -1];
+    inputs = [...inputs, 1];
     while (inputs.length > this.weights.length)
       this.weights.push(Math.random());
     this.inputs = inputs;
