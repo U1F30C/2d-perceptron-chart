@@ -30,9 +30,10 @@ class PerceptronVisualizer extends Component {
     const learningRate = 0.6;
     while (!this.converges(data)) {
       data.forEach(([inputs, outputs]) => {
-        const gradient =
-          (-this.neuron.predict(inputs) + outputs[0]) * learningRate;
-        this.neuron.adjust(gradient);
+        const actual = this.neuron.predict(inputs);
+        const expected = outputs[0];
+        const gradient = (expected - actual) * learningRate;
+        if (actual != expected) this.neuron.adjust(gradient);
       });
       await this.sleep(0.001);
     }
