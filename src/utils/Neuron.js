@@ -3,7 +3,7 @@ import { times } from "lodash";
 
 class Neuron {
   constructor(inputQuantity = 1, activate) {
-    this.weights = times(inputQuantity + 1, Math.random);
+    this.weights = times(inputQuantity + 1, () => Math.random() * 2 - 1);
     this.activate = activate;
   }
   inputs = null;
