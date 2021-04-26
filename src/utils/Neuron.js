@@ -1,9 +1,9 @@
 import { dot } from "./math";
-import { times } from "lodash";
+import { times, random } from "lodash";
 
 class Neuron {
   constructor(inputQuantity = 1, activate) {
-    this.weights = times(inputQuantity + 1, () => Math.random() * 2 - 1);
+    this.weights = times(inputQuantity + 1, () => random(-1, 1, true));
     this.activate = activate;
   }
   inputs = null;
@@ -16,7 +16,7 @@ class Neuron {
   predict(inputs) {
     inputs = [...inputs, 1];
     while (inputs.length > this.weights.length)
-      this.weights.push(Math.random());
+      this.weights.push(random(-1, 1, true));
     this.inputs = inputs;
     this.output = this.activate(this._predict(inputs));
 
