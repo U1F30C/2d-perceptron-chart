@@ -14,28 +14,25 @@ class PerceptronVisualizer extends Component {
     this.neuron = new Neuron(1, (x) => (x > 0 ? 1 : 0));
   }
   neuron;
-  converges(data) {
-    for (const [inputs, outputs] of data) {
-      const desired = outputs.slice(-1)[0];
-      const actual = this.neuron.predict(inputs);
-      console.log(inputs, desired, actual);
-      if (actual != desired) {
-        return false;
-      }
-    }
-    return true;
-  }
 
   async train(data) {
-    const learningRate = 0.6;
-    while (!this.converges(data)) {
-      data.forEach(([inputs, outputs]) => {
+    const learningRate = 0.5;
+    const tolerance = 0.05;
+    let meanSquaredError = Infinity;
+    let i = 0;
+    while (!(meanSquaredError < tolerance) && i++ < 1000) {
+      meanSquaredError = 0;
+      for (const [inputs, outputs] of data) {
         const actual = this.neuron.predict(inputs);
         const expected = outputs[0];
-        const gradient = (expected - actual) * learningRate;
-        if (actual != expected) this.neuron.adjust(gradient);
-      });
-      await this.sleep(0.001);
+        const localError = expected - actual;
+        const gradient = localError * learningRate;
+
+        meanSquaredError += localError;
+
+        this.neuron.adjust(gradient);
+        await this.sleep(0.001);
+      }
     }
   }
   sleep(seconds) {
