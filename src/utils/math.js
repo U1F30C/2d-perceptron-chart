@@ -14,6 +14,14 @@ function generateLine(w1, w2, bias, leftLimit = -1, rightLimit = 2) {
   return [p1, p2];
 }
 
+function generateRegressionLine(w1, bias, leftLimit = -1, rightLimit = 2) {
+  // y = w1 * x + bias
+
+  let p1 = { x: leftLimit, y: w1 * leftLimit + bias };
+  let p2 = { x: rightLimit, y: w1 * rightLimit + bias };
+  return [p1, p2];
+}
+
 function normalize(x, min, max) {
   return (x - min) / (max - min);
 }
@@ -22,4 +30,4 @@ function denormalize(x, min, max) {
   return x * (max - min) + min;
 }
 
-export { generateLine, dot, normalize, denormalize };
+export { generateLine, generateRegressionLine, dot, normalize, denormalize };
