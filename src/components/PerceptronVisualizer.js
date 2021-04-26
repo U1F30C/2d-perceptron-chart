@@ -3,7 +3,7 @@ import ParametersForm from "./ParametersForm";
 import { Neuron } from "./../utils/Neuron";
 
 import { Scatter } from "react-chartjs-2";
-import { generateLine, normalize, denormalize } from "../utils/math";
+import { generateRegressionLine, normalize, denormalize } from "../utils/math";
 import { min, max } from "lodash";
 
 class PerceptronVisualizer extends Component {
@@ -11,20 +11,20 @@ class PerceptronVisualizer extends Component {
   constructor(props) {
     super(props);
     this.handleDataChange = this.handleDataChange.bind(this);
-    this.neuron = new Neuron(1, (x) => (x > 0 ? 1 : 0));
+    this.neuron = new Neuron(1, (x) => x);
   }
   neuron;
 
   async train(data) {
     const learningRate = 0.5;
-    const tolerance = 0.05;
+    const tolerance = 0.00005;
     let meanSquaredError = Infinity;
     let i = 0;
     while (!(meanSquaredError < tolerance) && i++ < 1000) {
       meanSquaredError = 0;
       for (const [inputs, outputs] of data) {
-        const actual = this.neuron.predict(inputs);
-        const expected = outputs[0];
+        const actual = this.neuron.predict(inputs.slice(0, 1));
+        const expected = inputs[1];
         const localError = expected - actual;
         const gradient = localError * learningRate;
 
@@ -33,6 +33,8 @@ class PerceptronVisualizer extends Component {
         this.neuron.adjust(gradient);
         await this.sleep(0.001);
       }
+
+      console.log("MSE=" + meanSquaredError);
     }
   }
   sleep(seconds) {
@@ -73,7 +75,7 @@ class PerceptronVisualizer extends Component {
     });
     const normalizationData = this.normalizeSet(data);
     await this.train(normalizationData.data);
-    const line = generateLine(...this.neuron.weights, 0, 1);
+    const line = generateRegressionLine(...this.neuron.weights, 0, 1);
     this.setState({
       line: line.map(({ x, y }) => ({
         y: denormalize(y, normalizationData.minY, normalizationData.maxY),
@@ -89,7 +91,7 @@ class PerceptronVisualizer extends Component {
           data={{
             datasets: [
               {
-                label: "Hyperplano",
+                label: "Linea de regresión",
                 data: this.state.line,
                 type: "line",
                 backgroundColor: "rgba(255,255,255, 0)",
@@ -98,20 +100,11 @@ class PerceptronVisualizer extends Component {
                 hoverBorderColor: "rgba(230, 236, 235, 0.75)",
               },
               {
-                label: "Con obesidad",
+                label: "Datos",
                 data: this.state.positive,
                 type: "scatter",
                 backgroundColor: "rgba(0,255,0, 1)",
                 borderColor: "rgba(0,255,0, 1)",
-                hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
-                hoverBorderColor: "rgba(230, 236, 235, 0.75)",
-              },
-              {
-                label: "Sin obesidad",
-                data: this.state.negative,
-                type: "scatter",
-                backgroundColor: "rgba(255,0,0, 1)",
-                borderColor: "rgba(255,0,0, 1)",
                 hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
                 hoverBorderColor: "rgba(230, 236, 235, 0.75)",
               },
