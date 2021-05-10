@@ -1,49 +1,5 @@
-import React, { Component } from "react";
-import { Form, Button } from "react-bootstrap";
-import { times, random } from "lodash";
-
-class ParametersForm extends Component {
-  state = { inputs: "0,0\n0,1\n1,0\n1,1", outputs: "0\n0\n0\n1" };
-  handleChange = this.handleChange.bind(this);
-  submit = this.submit.bind(this);
-  splitData(text) {
-    return text.split("\n").map((line) => line.split(",").map((x) => +x));
-  }
-  bodyMassIndex(weight, height) {
-    return weight / (height * height);
-  }
-  generateRandomData(sampleSize) {
-    return times(sampleSize, () => {
-      const weight = random(10, 200, true);
-      const height = random(1, 2.7, true);
-      const isObese = this.bodyMassIndex(weight, height) > 30;
-      return [[weight, height], [+isObese]];
-    });
-  }
-
-  submit() {
-    const rules = cancerData;
-    // this.generateRandomData(50);
-
-    this.props.onChange(rules);
-  }
-
-  handleChange(event) {
-    event.stopPropagation();
-    this.setState({ [event.target.name]: event.target.value }, () => {});
-  }
-
-  render() {
-    return (
-      <Form>
-        <br />
-        <Button onClick={this.submit}>Calculari</Button>
-      </Form>
-    );
-  }
-}
-
-const cancerData = `5,1,1,1,2,1,3,1,1,1
+Clump,UnifSize,UnifShape,MargAdh,SingEpiSize,BareNuc,BlandChrom,NormNucl,Mit,Class
+5,1,1,1,2,1,3,1,1,1
 5,4,4,5,7,10,3,2,1,1
 3,1,1,1,2,2,3,1,1,1
 6,8,8,1,3,4,3,7,1,1
@@ -725,8 +681,4 @@ const cancerData = `5,1,1,1,2,1,3,1,1,1
 2,1,1,1,2,1,1,1,1,1
 5,10,10,3,7,3,8,10,2,0
 4,8,6,4,3,4,10,6,1,0
-4,8,8,5,4,5,10,4,1,0`
-  .split("\n")
-  .map((line) => line.split(","))
-  .map((sample) => [sample.slice(0, -1), sample.slice(-1)]);
-export default ParametersForm;
+4,8,8,5,4,5,10,4,1,0

@@ -3,28 +3,50 @@ import ParametersForm from "./ParametersForm";
 import { Neuron } from "./../utils/Neuron";
 
 import { Scatter } from "react-chartjs-2";
-import { generateRegressionLine, normalize, denormalize } from "../utils/math";
+import {
+  generateRegressionLine,
+  generateLine,
+  normalize,
+  denormalize,
+} from "../utils/math";
 import { min, max } from "lodash";
 
+function sigmoidActivation(output) {
+  const ex = Math.exp(output);
+  return ex / (ex + 1);
+}
 class PerceptronVisualizer extends Component {
   state = { line: [], positive: [], negative: [] };
   constructor(props) {
     super(props);
     this.handleDataChange = this.handleDataChange.bind(this);
-    this.neuron = new Neuron(1, (x) => x);
+    this.neuron = new Neuron(1, sigmoidActivation);
   }
   neuron;
+  async test(data) {
+    let accurateCount = 0;
+    for (const [inputs, outputs] of data) {
+      const actual = Math.round(this.neuron.predict(inputs));
+      const expected = +outputs[0];
+      if (actual == expected) accurateCount++;
+
+      await this.sleep(0.001);
+    }
+
+    return (accurateCount / data.length) * 100;
+  }
 
   async train(data) {
     const learningRate = 0.5;
-    const tolerance = 0.00005;
+    const tolerance = 0.1;
     let meanSquaredError = Infinity;
     let i = 0;
+    // console.log(data);
     while (!(meanSquaredError < tolerance) && i++ < 1000) {
       meanSquaredError = 0;
       for (const [inputs, outputs] of data) {
-        const actual = this.neuron.predict(inputs.slice(0, 1));
-        const expected = inputs[1];
+        const actual = this.neuron.predict(inputs);
+        const expected = outputs[0];
         const localError = expected - actual;
         const gradient = localError * learningRate;
 
@@ -36,6 +58,7 @@ class PerceptronVisualizer extends Component {
 
       console.log("MSE=" + meanSquaredError);
     }
+    return meanSquaredError;
   }
   sleep(seconds) {
     return new Promise((resolve, _reject) => {
@@ -74,8 +97,20 @@ class PerceptronVisualizer extends Component {
       negative,
     });
     const normalizationData = this.normalizeSet(data);
-    await this.train(normalizationData.data);
-    const line = generateRegressionLine(...this.neuron.weights, 0, 1);
+    const dataSetSize = normalizationData.data.length;
+    const dataPartitionPoint = Math.round(dataSetSize / 3);
+    const testingData = normalizationData.data.slice(0, dataPartitionPoint);
+    const trainingData = normalizationData.data.slice(
+      dataPartitionPoint,
+      dataSetSize
+    );
+    await this.train(trainingData);
+    const trainingAccuracy = await this.test(trainingData);
+    const testingAccuracy = await this.test(testingData);
+
+    this.setState({ trainingAccuracy, testingAccuracy });
+    console.log({ trainingAccuracy, testingAccuracy });
+    const line = generateLine(...this.neuron.weights, 0, 1);
     this.setState({
       line: line.map(({ x, y }) => ({
         y: denormalize(y, normalizationData.minY, normalizationData.maxY),
@@ -100,11 +135,20 @@ class PerceptronVisualizer extends Component {
                 hoverBorderColor: "rgba(230, 236, 235, 0.75)",
               },
               {
-                label: "Datos",
+                label: "Son cancer",
                 data: this.state.positive,
                 type: "scatter",
                 backgroundColor: "rgba(0,255,0, 1)",
                 borderColor: "rgba(0,255,0, 1)",
+                hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
+                hoverBorderColor: "rgba(230, 236, 235, 0.75)",
+              },
+              {
+                label: "Sin cancer",
+                data: this.state.negative,
+                type: "scatter",
+                backgroundColor: "rgba(255,0,0, 1)",
+                borderColor: "rgba(255,0,0, 1)",
                 hoverBackgroundColor: "rgba(230, 236, 235, 0.75)",
                 hoverBorderColor: "rgba(230, 236, 235, 0.75)",
               },
